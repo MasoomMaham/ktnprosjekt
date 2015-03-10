@@ -39,6 +39,6 @@ if __name__ == '__main__':
     This is the main method and is executed when you type "python Client.py"
     in your terminal.
 
-    No alterations is necessary
+    No alterations are necessary
     """
     client = Client('localhost', 9998)
