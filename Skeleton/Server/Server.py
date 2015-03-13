@@ -58,38 +58,40 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         while True:
             hasLoggedIn = False
             received_string = self.connection.recv(4096)
-            if received_string == '':
-                received_string = self.connection.recv(4096)
-
             received_string_list = received_string.split()
-
-
-
-            if received_string_list[0] == "'request':":
+            if received_string == '':
+                print("Print something" + received_string)
+                received_string = self.connection.recv(4096)
+                received_string_list = received_string.split()
+                print received_string
+            elif received_string_list[0] == 'rqst:':
                 if received_string_list[1] == 'login' and not hasLoggedIn:
-                    self.connection.send('Type in your desired username.')
+                    if userHandler.hasUser(received_string_list[3]):
+                        self.connection.send('This username is in use. Choose another one.')
+                    else:
+                        userHandler.addUser(received_string_list[1])
+                        user = received_string_list[1]
+                        response = 'response: Login successful'
+                        self.connection.send(response)
+                        hasLoggedIn = True
+
                 elif received_string_list[1] == 'logout':
                     self.connection.close()
                     userHandler.removeUser(user)
                 elif received_string_list[1] == 'names':
-                    users = userHandler.getUsers()
+                    usrs = userHandler.getUsers()
                     outString = ''
-                    for i in users:
+                    for i in usrs:
                         outString += i + '\n'
                     self.connection.send(outString)
                 elif received_string_list[1] == 'help':
                     self.connection.send(userHandler.printHelp())
 
 
-            elif received_string_list[0] == "'content':" and not hasLoggedIn:
 
-                if userHandler.hasUser(received_string_list[1]):
-                    self.connection.send('This username is in use. Choose another one.')
-                else:
-                    userHandler.addUser(received_string_list[1])
-                    user = received_string_list[1]
-                    self.connection.send('Login successful.')
-                    hasLoggedIn = True
+            elif input == 'Quit':
+                global server
+                server.exit()
             else:
                 self.connection.send('Invalid input, type help for commands.')
 
