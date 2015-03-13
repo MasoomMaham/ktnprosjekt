@@ -65,28 +65,36 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             hasLoggedIn = False
             received_string = self.connection.recv(4096)
 
-            jrec = json.load(received_string)
-            request = jrec["request"]
-            body = jrec["content"]
-
             if received_string == '':
-                print("Print something" + received_string)
-                received_string = self.connection.recv(4096)
-                jrec = json.load(received_string)
-                request = jrec["request"]
-                body = jrec["content"]
 
-            elif request == 'login' and not hasLoggedIn:
+                received_string = self.connection.recv(4096)
+                print("Print something" + received_string)
+            elif received_string[0] != '{':
+                received_string = self.connection.recv(4096)
+            else:
+                print received_string
+                jrec = json.loads(received_string)
+                body = jrec["content"]
+                request = jrec["request"]
+                print body
+                print request
+
+            if request == 'login' and not hasLoggedIn:
                 if userHandler.hasUser(body):
-                    response = {'Timestamp': time.localtime(), 'Sender': 'Server', 'Response':'Login', 'Content':'The username is already in use, please choose another one.'}
+                    response = u'{"Timestamp": time.localtime(), "Sender": "Server", "Response": "Login", "Content": "The username is already in use, please choose another one."}'
                     self.connection.send(json.dumps(response))
                 else:
                     userHandler.addConnection(self.connection)
                     userHandler.addUser(body)
-                    response = {'Timestamp': time.localtime(), 'Sender': 'Server', 'Response': 'Login', 'Content': 'Login Successful.'}
+                    response = u'{"Timestamp": time.localtime(), "Sender": "Server", "Response": "Login", "Content": "Login Successful."}'
                     self.connection.send(json.dumps(response))
             elif request == 'logout' and hasLoggedIn:
-                userHandler.removeUser()
+                userHandler.removeUser(body)
+                userHandler.removeConnection(self.connection)
+                self.connection.close()
+
+            elif request == 'names':
+
 
 
 
