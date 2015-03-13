@@ -55,8 +55,11 @@ class Client:
             income = raw_input()
             dataOut = 'rqst: login content: '+income
             send_payload(dataOut)
-
-
+        elif income == '-logout':
+            dataOut = 'rqst: logout content: '
+            send_payload(dataOut)
+        elif income == '-names':
+            dataOut = 'rqst: names content: '
 
 
 
