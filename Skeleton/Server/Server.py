@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import SocketServer
+import sys
+sys.path.append(0,'Skeleton/Client/')
+import time
 
 class userHandler():
     users = []
-    helpCmd = ['The following commands are useful:'
-               '\n login: type "login" followed by a return, then a line consisting only of the desired username.'
-               '\n names: type only this in the console in order to retrieve all of the occupied names in the chatroom.'
-               '\n logout: type only this in the console in order to log out from the server.']
+    connections = []
 
     def addUser(self, user):
         global users
@@ -30,6 +30,12 @@ class userHandler():
         for i in helpCmd:
             outString += i
         return outString
+    def addConnection(self, handler):
+        global connections
+        connections.append(handler)
+    def getConnections(self):
+        global connections
+        return connections
 
 
 

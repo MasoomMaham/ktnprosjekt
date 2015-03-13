@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import socket
 from MessageReceiver import MessageReceiver
-import json
+
 
 
 class Client:
@@ -21,6 +21,8 @@ class Client:
         self.run()
 
         msg = MessageReceiver(self, self.connection)
+        msg.start()
+
     def run(self):
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
@@ -30,7 +32,7 @@ class Client:
         pass
 
     def receive_message(self, message):
-        temp = ''
+        print message
         pass
 
     def send_payload(self, data):
