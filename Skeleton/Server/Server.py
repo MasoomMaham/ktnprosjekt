@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import SocketServer
 import sys
-sys.path.append(0,'Skeleton/Client/')
+
 import time
+import json
 
 class userHandler():
     users = []
@@ -36,14 +37,13 @@ class userHandler():
     def getConnections(self):
         global connections
         return connections
-
-
-
-
+    def removeConnection(self, conn):
+        global connections
+        connections.remove(conn)
 
 
 class ClientHandler(SocketServer.BaseRequestHandler):
-    server = userHandler()
+    handler = userHandler()
     """
     This is the ClientHandler class. Everytime a new client connects to the
     server, a new ClientHandler object will be created. This class represents
@@ -64,42 +64,30 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         while True:
             hasLoggedIn = False
             received_string = self.connection.recv(4096)
-            received_string_list = received_string.split()
+
+            jrec = json.load(received_string)
+            request = jrec["request"]
+            body = jrec["content"]
+
             if received_string == '':
                 print("Print something" + received_string)
                 received_string = self.connection.recv(4096)
-                received_string_list = received_string.split()
-                print received_string
-            elif received_string_list[0] == 'rqst:':
-                if received_string_list[1] == 'login' and not hasLoggedIn:
-                    if userHandler.hasUser(received_string_list[3]):
-                        self.connection.send('This username is in use. Choose another one.')
-                    else:
-                        userHandler.addUser(received_string_list[1])
-                        user = received_string_list[1]
-                        response = 'response: Login successful'
-                        self.connection.send(response)
-                        hasLoggedIn = True
+                jrec = json.load(received_string)
+                request = jrec["request"]
+                body = jrec["content"]
 
-                elif received_string_list[1] == 'logout':
-                    self.connection.close()
-                    userHandler.removeUser(user)
-                elif received_string_list[1] == 'names':
-                    usrs = userHandler.getUsers()
-                    outString = ''
-                    for i in usrs:
-                        outString += i + '\n'
-                    self.connection.send(outString)
-                elif received_string_list[1] == 'help':
-                    self.connection.send(userHandler.printHelp())
+            elif request == 'login' and not hasLoggedIn:
+                if userHandler.hasUser(body):
+                    response = {'Timestamp': time.localtime(), 'Sender': 'Server', 'Response':'Login', 'Content':'The username is already in use, please choose another one.'}
+                    self.connection.send(json.dumps(response))
+                else:
+                    userHandler.addConnection(self.connection)
+                    userHandler.addUser(body)
+                    response = {'Timestamp': time.localtime(), 'Sender': 'Server', 'Response': 'Login', 'Content': 'Login Successful.'}
+                    self.connection.send(json.dumps(response))
+            elif request == 'logout' and hasLoggedIn:
+                userHandler.removeUser()
 
-
-
-            elif input == 'Quit':
-                global server
-                server.exit()
-            else:
-                self.connection.send('Invalid input, type help for commands.')
 
 
 
