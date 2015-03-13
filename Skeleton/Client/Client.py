@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import socket
+import json
 from MessageReceiver import MessageReceiver
 
 
@@ -32,11 +33,16 @@ class Client:
         pass
 
     def receive_message(self, message):
-        print message
+        obj = json.load(message)
+        time = obj["Timestamp"]
+        sender = obj["Sender"]
+        response = obj["Respnse"]
+        body = obj["Content"]
+        print '[Time: ' + time + ' ]' + '[Sender: ' + sender + ' ]' + '[Response: ' + response + '] ' + '[Content:' + body + '] '
         pass
 
     def send_payload(self, data):
-        self.connection.send(data)
+        self.connection.send(json.dumps(data))
         pass
     loggedOn = False
     print("Welcome to SuperAwesome chat. Type -help if you need assistance.")
@@ -53,15 +59,17 @@ class Client:
         elif income == '-login':
             print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
             income = raw_input()
-            dataOut = 'rqst: login content: '+income
-            send_payload(dataOut)
+            obj = {'request': 'login', 'content': income}
+            send_payload(obj)
         elif income == '-logout':
-            dataOut = 'rqst: logout content: '
-            send_payload(dataOut)
+            obj = {'request': 'logout', 'content': ''}
+            send_payload(obj)
         elif income == '-names':
-            dataOut = 'rqst: names content: '
-
-
+            obj = {'request': 'names', 'content': ''}
+            send_payload(obj)
+        else:
+            obj = {'request': 'msg', 'content': income}
+            send_payload(obj)
 
 
 if __name__ == '__main__':
