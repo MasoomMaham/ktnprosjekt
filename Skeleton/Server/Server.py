@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import SocketServer
-import sys
+import datetime
 
 import time
 import json
@@ -8,42 +8,38 @@ import json
 class userHandler():
     users = []
     connections = []
+    global connections
+    global users
 
     def addUser(self, user):
-        global users
+        users
         users.append(user)
 
     def hasUser(self, user):
-        global users
+        users
         for i in users:
-            if users[i] == user:
+            if i == user:
                 return True
         return False
     def removeUser(self, user):
-        global users
+        users
         users.remove(user)
     def getUsers(self):
-        global users
+        users
         return users
-    def printHelp(self):
-        global helpCmd
-        outString = ''
-        for i in helpCmd:
-            outString += i
-        return outString
     def addConnection(self, handler):
-        global connections
+        connections
         connections.append(handler)
     def getConnections(self):
-        global connections
+        connections
         return connections
     def removeConnection(self, conn):
-        global connections
+        connections
         connections.remove(conn)
 
 
 class ClientHandler(SocketServer.BaseRequestHandler):
-    handler = userHandler()
+
     """
     This is the ClientHandler class. Everytime a new client connects to the
     server, a new ClientHandler object will be created. This class represents
@@ -52,6 +48,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
     """
 
     def handle(self):
+        handler = userHandler()
         user = ''
         """
         This method handles the connection between a client and the server.
@@ -64,36 +61,58 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         while True:
             hasLoggedIn = False
             received_string = self.connection.recv(4096)
-
             if received_string == '':
-
                 received_string = self.connection.recv(4096)
-                print("Print something" + received_string)
-            elif received_string[0] != '{':
-                received_string = self.connection.recv(4096)
-            else:
-                print received_string
                 jrec = json.loads(received_string)
                 body = jrec["content"]
                 request = jrec["request"]
-                print body
-                print request
+            else:
+                jrec = json.loads(received_string)
+                body = jrec["content"]
+                request = jrec["request"]
 
             if request == 'login' and not hasLoggedIn:
-                if userHandler.hasUser(body):
-                    response = u'{"Timestamp": time.localtime(), "Sender": "Server", "Response": "Login", "Content": "The username is already in use, please choose another one."}'
-                    self.connection.send(json.dumps(response))
+                if handler.hasUser(body):
+                    tid = time.time()
+                    thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                    response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "The username is already in use, please choose another one."}
+                    jsonresponse = json.dumps(response)
+                    self.connection.send(json.dumps(jsonresponse))
+
+
                 else:
-                    userHandler.addConnection(self.connection)
-                    userHandler.addUser(body)
-                    response = u'{"Timestamp": time.localtime(), "Sender": "Server", "Response": "Login", "Content": "Login Successful."}'
-                    self.connection.send(json.dumps(response))
+                    handler.addConnection(self.connection)
+                    handler.addUser(body)
+                    user = body
+                    tid = time.time()
+                    thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                    response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "Login Successful."}
+                    jsonresponse = json.dumps(response)
+                    self.connection.send(jsonresponse)
+                    hasLoggedIn = True
+                    print(body+" logged in.")
             elif request == 'logout' and hasLoggedIn:
-                userHandler.removeUser(body)
-                userHandler.removeConnection(self.connection)
+                handler.removeUser(body)
+                print(body+" logged out.")
+                handler.removeConnection(self.connection)
                 self.connection.close()
 
             elif request == 'names':
+                tid = time.time()
+                thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Names", "Content": userHandler.getUsers()}
+                jsonresponse = json.dumps(response)
+                self.connection.send(jsonresponse)
+
+            elif request == 'msg':
+                print("Got message: "+body)
+                threads = handler.getConnections()
+                tid = time.time()
+                thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                response = {"Timestamp": thisTime, "Sender": user, "Response": "Message", "Content": body}
+                jsonresponse = json.dumps(response)
+                for i in threads:
+                    i.send(jsonresponse)
 
 
 

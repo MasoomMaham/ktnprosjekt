@@ -31,7 +31,6 @@ class Client:
         print("Welcome to SuperAwesome chat. Type -help if you need assistance.")
         while True:
             income = raw_input()
-            print("Input: "+income)
             if income == '-help':
                 helpCmd = ['The following commands are useful:'
                 '\n -login: type "login" followed by a return, then a line consisting only of the desired username.'
@@ -42,24 +41,29 @@ class Client:
             elif income == '-login':
                 print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
                 income = raw_input()
-                obj = u'{"request": "login", "content": income}'
+                obj = {"request": "login", "content": income}
+                jsonobj = json.dumps(obj)
                 loggedOn = True
-                self.send_payload(obj)
+                self.send_payload(jsonobj)
+                print jsonobj
             elif income == '-logout' and loggedOn:
-                obj = u'{"request": "logout", "content": ""}'
-                self.send_payload(obj)
+                obj = {"request": "logout", "content": ""}
+                jsonobj = json.dumps(obj)
+                self.send_payload(jsonobj)
                 self.disconnect()
             elif income == "-logout" and not loggedOn:
                 print("You have to be logged in order to log out.")
             elif income == "-names":
-                obj = u'{"request": "names", "content": ""}'
-                self.send_payload(obj)
+                obj = {"request": "names", "content": ""}
+                jsonobj = json.dumps(obj)
+                self.send_payload(jsonobj)
             elif income == '-Quit':
                 print "Bye"
                 break
             else:
-                obj = u'{"request": "msg", "content": income}'
-                self.send_payload(obj)
+                obj = {"request": "msg", "content": income}
+                jsonobj = json.dumps(obj)
+                self.send_payload(jsonobj)
 
 
     def disconnect(self):
@@ -76,7 +80,7 @@ class Client:
         pass
 
     def send_payload(self, data):
-        self.connection.send(json.dumps(data))
+        self.connection.send(data)
         pass
 
 if __name__ == '__main__':
