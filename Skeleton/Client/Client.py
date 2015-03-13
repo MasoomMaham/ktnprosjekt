@@ -60,6 +60,7 @@ class Client:
             print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
             income = raw_input()
             obj = {'request': 'login', 'content': income}
+            loggedOn = True
             send_payload(obj)
         elif income == '-logout':
             obj = {'request': 'logout', 'content': ''}
