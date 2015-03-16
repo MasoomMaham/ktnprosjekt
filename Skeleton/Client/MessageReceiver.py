@@ -10,23 +10,28 @@ class MessageReceiver(Thread):
     """
 
     def __init__(self, client, connection):
-
-        self.clt = client
-        self.cnt = connection
+        super(MessageReceiver, self).__init__()
+        self.client = client
+        self.connection = connection
 
         """
         This method is executed when creating a new MessageReceiver object
         """
 
         # Flag to run thread as a deamon
-        self.daemon = True
 
+        self.daemon = True
 
         # TODO: Finish initialization of MessageReceiver
 
     def run(self):
-        message = self.cnt.recv(4096)
-        if message != '':
-            self.clt.receive_message(message)
-        pass
+        print("Connection: "+str(self.connection))
+        while True:
+            if self.client.hasloggedOn:
+                message = self.connection.recv(4096)
+                #self.cnt.send(message)
+                if message:
+                    self.client.receive_message(message)
+                else:
+                    self.client.disconnect()
 

@@ -4,13 +4,13 @@ import json
 from MessageReceiver import MessageReceiver
 
 
-
 class Client:
     """
     This is the chat client class
     """
 
     def __init__(self, host, server_port):
+        self.hasloggedOn = False
         self.host = host
         self.server_port = server_port
         """
@@ -19,16 +19,20 @@ class Client:
 
         # Set up the socket connection to the server
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.msg = MessageReceiver(self, self.connection)
+
         self.run()
 
-        msg = MessageReceiver(self, self.connection)
-        msg.start()
 
     def run(self):
+        self.msg.start()
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
         loggedOn = False
         print("Welcome to SuperAwesome chat. Type -help if you need assistance.")
+        print("Thread: "+str(self.msg.isAlive()))
+        print("Connection: "+str(self.connection))
+
         while True:
             income = raw_input()
             if income == '-help':
@@ -40,11 +44,13 @@ class Client:
                     print i
             elif income == '-login':
                 print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
+
                 income = raw_input()
                 obj = {"request": "login", "content": income}
                 jsonobj = json.dumps(obj)
-                loggedOn = True
                 self.send_payload(jsonobj)
+                loggedOn = True
+                self.hasloggedOn = True
             elif income == '-logout' and loggedOn:
                 obj = {"request": "logout", "content": ""}
                 jsonobj = json.dumps(obj)
@@ -60,20 +66,25 @@ class Client:
                 print "Bye"
                 break
             else:
-                obj = {"request": "msg", "content": income}
-                jsonobj = json.dumps(obj)
-                self.send_payload(jsonobj)
-
+                if not loggedOn:
+                    print("You have to be logged on in order to chat.")
+                elif loggedOn:
+                    print("Got message: "+income)
+                    obj = {"request": "msg", "content": income}
+                    jsonobj = json.dumps(obj)
+                    self.send_payload(jsonobj)
 
     def disconnect(self):
         self.connection.close()
         pass
 
     def receive_message(self, message):
-        obj = json.load(message)
+        print("JSON: "+message)
+        obj = json.loads(message)
+        print ("DICT "+obj)
         time = obj["Timestamp"]
         sender = obj["Sender"]
-        response = obj["Respnse"]
+        response = obj["Response"]
         body = obj["Content"]
         print '[Time: ' + time + ' ]' + '[Sender: ' + sender + ' ]' + '[Response: ' + response + '] ' + '[Content:' + body + '] '
         pass

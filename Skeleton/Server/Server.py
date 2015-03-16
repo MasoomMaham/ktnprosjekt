@@ -6,35 +6,35 @@ import time
 import json
 
 class userHandler():
-    users = []
     connections = []
+    users =[]
     global connections
     global users
 
     def addUser(self, user):
-        users
+
         users.append(user)
 
     def hasUser(self, user):
-        users
+
         for i in users:
             if i == user:
                 return True
         return False
     def removeUser(self, user):
-        users
+
         users.remove(user)
     def getUsers(self):
-        users
+
         return users
     def addConnection(self, handler):
-        connections
+
         connections.append(handler)
     def getConnections(self):
-        connections
+
         return connections
     def removeConnection(self, conn):
-        connections
+
         connections.remove(conn)
 
 
@@ -88,12 +88,12 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "Login Successful."}
                     jsonresponse = json.dumps(response)
                     self.connection.send(jsonresponse)
-                    hasLoggedIn = True
+
                     print(body+" logged in.")
             elif request == 'logout' and hasLoggedIn:
                 handler.removeUser(body)
                 print(body+" logged out.")
-                handler.removeConnection(self.connection)
+                handler.removeConnection(self)
                 self.connection.close()
 
             elif request == 'names':
@@ -106,12 +106,23 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             elif request == 'msg':
                 print("Got message: "+body)
                 threads = handler.getConnections()
+                print threads
+                print("Number of clients: " + str(len(threads)))
                 tid = time.time()
                 thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                 response = {"Timestamp": thisTime, "Sender": user, "Response": "Message", "Content": body}
                 jsonresponse = json.dumps(response)
                 for i in threads:
                     i.connection.send(jsonresponse)
+                    obj = i.connection.recv(4096)
+                    print obj
+            #elif request == 'msg' and not hasLoggedIn:
+                #print
+                #tid = time.time()
+                #thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                #response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Error", "Content": "You have to be logged in in order to send messages,"}
+                #jsonresponse = json.dumps(response)
+                #self.connection.send(jsonresponse)
 
 
 
