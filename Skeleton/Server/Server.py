@@ -76,6 +76,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "The username is already in use, please choose another one."}
+                    print type(response)
                     jsonresponse = json.dumps(response)
                     self.connection.send(json.dumps(jsonresponse))
 
@@ -86,6 +87,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "Login Successful."}
+                    print type(response)
                     jsonresponse = json.dumps(response)
                     self.connection.send(jsonresponse)
 

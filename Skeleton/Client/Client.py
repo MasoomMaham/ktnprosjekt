@@ -79,9 +79,8 @@ class Client:
         pass
 
     def receive_message(self, message):
-        print("JSON: "+message)
         obj = json.loads(message)
-        print ("DICT "+obj)
+        print type(obj)
         time = obj["Timestamp"]
         sender = obj["Sender"]
         response = obj["Response"]
