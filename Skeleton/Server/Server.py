@@ -79,9 +79,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     jsonresponse = json.dumps(response)
                     self.connection.send(json.dumps(jsonresponse))
 
-
                 else:
-                    handler.addConnection(self.connection)
+                    handler.addConnection(self)
                     handler.addUser(body)
                     user = body
                     tid = time.time()
@@ -112,7 +111,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 response = {"Timestamp": thisTime, "Sender": user, "Response": "Message", "Content": body}
                 jsonresponse = json.dumps(response)
                 for i in threads:
-                    i.send(jsonresponse)
+                    i.connection.send(jsonresponse)
 
 
 

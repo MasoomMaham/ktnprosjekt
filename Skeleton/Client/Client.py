@@ -45,7 +45,6 @@ class Client:
                 jsonobj = json.dumps(obj)
                 loggedOn = True
                 self.send_payload(jsonobj)
-                print jsonobj
             elif income == '-logout' and loggedOn:
                 obj = {"request": "logout", "content": ""}
                 jsonobj = json.dumps(obj)
