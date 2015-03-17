@@ -61,11 +61,15 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         while True:
             hasLoggedIn = False
             received_string = self.connection.recv(4096)
-            if received_string == '':
+            if type(received_string) != str:
                 received_string = self.connection.recv(4096)
-                jrec = json.loads(received_string)
-                body = jrec["content"]
-                request = jrec["request"]
+                try:
+                    jrec = json.loads(received_string)
+                    body = jrec["content"]
+                    request = jrec["request"]
+
+                except ValueError:
+                      print("Not JSON-Object, trying again.")
             else:
                 jrec = json.loads(received_string)
                 body = jrec["content"]
@@ -92,7 +96,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     self.connection.send(jsonresponse)
 
                     print(body+" logged in.")
-            elif request == 'logout' and hasLoggedIn:
+            elif request == 'logout':
+                print handler.getUsers()
+                print handler.getConnections()
                 handler.removeUser(body)
                 print(body+" logged out.")
                 handler.removeConnection(self)
@@ -108,16 +114,17 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             elif request == 'msg':
                 print("Got message: "+body)
                 threads = handler.getConnections()
-                print threads
-                print("Number of clients: " + str(len(threads)))
                 tid = time.time()
                 thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                 response = {"Timestamp": thisTime, "Sender": user, "Response": "Message", "Content": body}
                 jsonresponse = json.dumps(response)
                 for i in threads:
-                    i.connection.send(jsonresponse)
-                    obj = i.connection.recv(4096)
-                    print obj
+                    if i == self:
+                        continue
+                    else:
+                        i.connection.send(jsonresponse)
+                    #obj = i.connection.recv(4096)
+
             #elif request == 'msg' and not hasLoggedIn:
                 #print
                 #tid = time.time()
@@ -125,15 +132,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 #response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Error", "Content": "You have to be logged in in order to send messages,"}
                 #jsonresponse = json.dumps(response)
                 #self.connection.send(jsonresponse)
-
-
-
-
-
-
-
-
-
 
             # TODO: Add handling of received payload from client
 
