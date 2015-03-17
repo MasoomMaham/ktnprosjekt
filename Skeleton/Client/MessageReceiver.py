@@ -22,7 +22,7 @@ class MessageReceiver(Thread):
 
         self.daemon = True
 
-        # TODO: Finish initializatiozn of MessageReceiver
+        # TODO: Finish initialization of MessageReceiver
 
     def run(self):
         print("Connection: "+str(self.connection))
@@ -34,4 +34,3 @@ class MessageReceiver(Thread):
                     self.client.receive_message(message)
                 else:
                     self.client.disconnect()
-
