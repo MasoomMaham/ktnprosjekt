@@ -127,17 +127,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 #self.connection.send(jsonresponse)
 
 
-
-
-
-
-
-
-
-            
-            # TODO: Add handling of received payload from client
-
-
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     """
     This class is present so that each client connected will be ran as a own
