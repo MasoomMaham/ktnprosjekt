@@ -22,6 +22,8 @@ class MessageReceiver(Thread):
 
         self.daemon = True
 
+        # TODO: Finish initializatiozn of MessageReceiver
+
     def run(self):
         print("Connection: "+str(self.connection))
         while True:
