@@ -6,36 +6,41 @@ import time
 import json
 
 class userHandler():
-    connections = []
-    users =[]
-    global connections
-    global users
+
+    def __init__(self):
+        self.connections = []
+        self.users =[]
+        self.history = []
+
 
     def addUser(self, user):
-
-        users.append(user)
+        self.users.append(user)
 
     def hasUser(self, user):
-
-        for i in users:
+        for i in self.users:
             if i == user:
                 return True
         return False
+
     def removeUser(self, user):
+        self.users.remove(user)
 
-        users.remove(user)
     def getUsers(self):
+        return self.users
 
-        return users
     def addConnection(self, handler):
+        self.connections.append(handler)
 
-        connections.append(handler)
     def getConnections(self):
+        return self.connections
 
-        return connections
     def removeConnection(self, conn):
+        self.connections.remove(conn)
+    def addMessage(self, message):
+        self.history.append(message)
 
-        connections.remove(conn)
+    def getHistory(self):
+        return self.history
 
 
 class ClientHandler(SocketServer.BaseRequestHandler):
@@ -65,11 +70,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 received_string = self.connection.recv(4096)
                 try:
                     jrec = json.loads(received_string)
-                    body = jrec["content"]
-                    request = jrec["request"]
+                    body = jrec["content"].encode()
+                    request = jrec["request"].encode()
 
                 except ValueError:
-                      print("Not JSON-Object, trying again.")
+                    print("Not JSON-Object, trying again.")
             else:
                 jrec = json.loads(received_string)
                 body = jrec["content"]
@@ -86,22 +91,28 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
                 else:
                     handler.addConnection(self)
-                    handler.addUser(body)
+
                     user = body
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "Login Successful."}
-                    print type(response)
                     jsonresponse = json.dumps(response)
                     self.connection.send(jsonresponse)
-
+                    history = handler.getHistory()
+                    response = {"Timestamp": thisTime, "Sender": "Server", "Response": "History", "Content": history}
+                    jsonresponse = json.dumps(response)
+                    self.connection.send(jsonresponse)
                     print(body+" logged in.")
+                    handler.addUser(str(body))
             elif request == 'logout':
                 print handler.getUsers()
                 print handler.getConnections()
-                handler.removeUser(body)
+                handler.removeUser(str(body))
                 print(body+" logged out.")
                 handler.removeConnection(self)
+                tid = time.time()
+                thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                obj = {"Timestamp": thisTime, "Sender": "Server", "Response": "Logout", "Content": "Logout successfull"}
                 self.connection.close()
 
             elif request == 'names':
@@ -110,9 +121,21 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Names", "Content": userHandler.getUsers()}
                 jsonresponse = json.dumps(response)
                 self.connection.send(jsonresponse)
-
+            elif request == 'history':
+                    tid = time.time()
+                    thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                    history = handler.getHistory()
+                    response = {"Timestamp": thisTime, "Sender": "Server", "Response": "History", "Content": history}
+                    jsonresponse = json.dumps(response)
+                    self.connection.send(jsonresponse)
             elif request == 'msg':
                 print("Got message: "+body)
+                tid = time.time()
+                thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                obj = {"Timestamp": thisTime, "Sender": user, "Response": "Message", "Content": body}
+                jsonresponse = json.dumps(obj)
+                handler.addMessage(jsonresponse)
+                print("Added "+body+" to history")
                 threads = handler.getConnections()
                 tid = time.time()
                 thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
@@ -155,7 +178,7 @@ if __name__ == "__main__":
     No alterations is necessary
     """
 
-    HOST, PORT = 'localhost', 9998
+    HOST, PORT = '129.241.107.140', 20000
     print 'Server running...'
 
     # Set up and initiate the TCP server
