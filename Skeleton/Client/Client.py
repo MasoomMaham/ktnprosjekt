@@ -23,15 +23,12 @@ class Client:
 
         self.run()
 
-
     def run(self):
         self.msg.start()
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
         loggedOn = False
         print("Welcome to SuperAwesome chat. Type -help if you need assistance.")
-        print("Thread: "+str(self.msg.isAlive()))
-        print("Connection: "+str(self.connection))
 
         while True:
             income = raw_input()
@@ -44,7 +41,6 @@ class Client:
                     print i
             elif income == '-login':
                 print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
-
                 income = raw_input()
                 obj = {"request": "login", "content": income}
                 jsonobj = json.dumps(obj)
@@ -56,6 +52,8 @@ class Client:
                 jsonobj = json.dumps(obj)
                 self.send_payload(jsonobj)
                 self.disconnect()
+                self.hasloggedOn = False
+                print("Log out successful.")
             elif income == "-logout" and not loggedOn:
                 print("You have to be logged in order to log out.")
             elif income == "-names":
@@ -69,7 +67,6 @@ class Client:
                 if not loggedOn:
                     print("You have to be logged on in order to chat.")
                 elif loggedOn:
-                    print("Got message: "+income)
                     obj = {"request": "msg", "content": income}
                     jsonobj = json.dumps(obj)
                     self.send_payload(jsonobj)
@@ -85,7 +82,7 @@ class Client:
         sender = obj["Sender"]
         response = obj["Response"]
         body = obj["Content"]
-        print '[Time: ' + time + ' ]' + '[Sender: ' + sender + ' ]' + '[Response: ' + response + '] ' + '[Content:' + body + '] '
+        print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + body
         pass
 
     def send_payload(self, data):
