@@ -31,7 +31,9 @@ class Client:
         print("Welcome to SuperAwesome chat. Type -help if you need assistance.")
 
         while True:
+
             income = raw_input()
+            #income = unicode(rawincome, "utf-8")
             if income == '-help':
                 helpCmd = ['The following commands are useful:'
                 '\n -login: type "login" followed by a return, then a line consisting only of the desired username.'
@@ -41,34 +43,57 @@ class Client:
                     print i
             elif income == '-login':
                 print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
+
                 income = raw_input()
+                #income = unicode(rawincome, "utf-8")
                 obj = {"request": "login", "content": income}
-                jsonobj = json.dumps(obj)
+                try:
+                    jsonobj = json.dumps(obj)
+                except UnicodeDecodeError:
+                    print("Norwegian characters are not allowed.")
+                    continue
                 self.send_payload(jsonobj)
                 loggedOn = True
                 self.hasloggedOn = True
             elif income == '-logout' and loggedOn:
                 obj = {"request": "logout", "content": ""}
-                jsonobj = json.dumps(obj)
+                try:
+                    jsonobj = json.dumps(obj)
+                except UnicodeDecodeError:
+                    print("Norwegian characters are not allowed.")
+                    continue
                 self.send_payload(jsonobj)
                 self.disconnect()
                 self.hasloggedOn = False
-                print("Log out successful.")
             elif income == "-logout" and not loggedOn:
                 print("You have to be logged in order to log out.")
             elif income == "-names":
                 obj = {"request": "names", "content": ""}
-                jsonobj = json.dumps(obj)
+                try:
+                    jsonobj = json.dumps(obj)
+                except UnicodeDecodeError:
+                    print("Norwegian characters are not allowed.")
+                    continue
                 self.send_payload(jsonobj)
+
+            elif income == "-history":
+                self.requestHistory()
             elif income == '-Quit':
                 print "Bye"
                 break
+            elif income == '-status':
+                print("Connection: "+str(self.connection))
+
             else:
                 if not loggedOn:
                     print("You have to be logged on in order to chat.")
                 elif loggedOn:
                     obj = {"request": "msg", "content": income}
-                    jsonobj = json.dumps(obj)
+                    try:
+                        jsonobj = json.dumps(obj)
+                    except UnicodeDecodeError:
+                        print("Norwegian characters are not allowed.")
+                        continue
                     self.send_payload(jsonobj)
 
     def disconnect(self):
@@ -77,17 +102,28 @@ class Client:
 
     def receive_message(self, message):
         obj = json.loads(message)
-        print type(obj)
         time = obj["Timestamp"]
         sender = obj["Sender"]
         response = obj["Response"]
         body = obj["Content"]
-        print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + body
+
+        if response == "History" and (len(body) > 1):
+            for i in body:
+                self.receive_message(i)
+        elif response == "History" and len(body)==0:
+            print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: No history.'
+        else:
+            print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + body
         pass
 
     def send_payload(self, data):
         self.connection.send(data)
         pass
+
+    def requestHistory(self):
+        obj = {"request": "history", "content": ""}
+        jsonobj = json.dumps(obj)
+        self.send_payload(jsonobj)
 
 if __name__ == '__main__':
     """
@@ -96,4 +132,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('localhost', 9998)
+    client = Client('129.241.107.140', 20000)
