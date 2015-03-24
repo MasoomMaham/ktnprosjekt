@@ -85,13 +85,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "The username is already in use, please choose another one."}
-                    print type(response)
                     jsonresponse = json.dumps(response)
                     self.connection.send(json.dumps(jsonresponse))
 
                 else:
                     handler.addConnection(self)
-
                     user = body
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
@@ -99,9 +97,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     jsonresponse = json.dumps(response)
                     self.connection.send(jsonresponse)
                     history = handler.getHistory()
-                    response = {"Timestamp": thisTime, "Sender": "Server", "Response": "History", "Content": history}
-                    jsonresponse = json.dumps(response)
-                    self.connection.send(jsonresponse)
+                    for i in history:
+                        self.connection.send(i)
                     print(body+" logged in.")
                     handler.addUser(str(body))
             elif request == 'logout':
@@ -112,13 +109,14 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 handler.removeConnection(self)
                 tid = time.time()
                 thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                obj = {"Timestamp": thisTime, "Sender": "Server", "Response": "Logout", "Content": "Logout successfull"}
+                obj = {"Timestamp": thisTime, "Sender": "Server", "Response": "Logout", "Content": "Logout successful"}
                 self.connection.close()
 
             elif request == 'names':
                 tid = time.time()
                 thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Names", "Content": userHandler.getUsers()}
+                users = handler.getUsers()
+                response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Names", "Content": users}
                 jsonresponse = json.dumps(response)
                 self.connection.send(jsonresponse)
             elif request == 'history':
@@ -178,7 +176,7 @@ if __name__ == "__main__":
     No alterations is necessary
     """
 
-    HOST, PORT = '129.241.107.140', 20000
+    HOST, PORT = '78.91.70.232', 20000
     print 'Server running...'
 
     # Set up and initiate the TCP server

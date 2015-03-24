@@ -107,10 +107,13 @@ class Client:
         response = obj["Response"]
         body = obj["Content"]
 
-        if response == "History" and (len(body) > 1):
+        if type(body) == list and (len(body) > 1):
+            for i in body:
+                '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + i
+        elif response == "History" and len(body) > 1:
             for i in body:
                 self.receive_message(i)
-        elif response == "History" and len(body)==0:
+        elif response == "History" and len(body) == 0:
             print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: No history.'
         else:
             print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + body
@@ -132,4 +135,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('129.241.107.140', 20000)
+    client = Client('78.91.70.232', 20000)
