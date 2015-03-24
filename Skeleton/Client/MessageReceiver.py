@@ -25,11 +25,10 @@ class MessageReceiver(Thread):
         # TODO: Finish initialization of MessageReceiver
 
     def run(self):
-        print("Connection: "+str(self.connection))
+
         while True:
             if self.client.hasloggedOn:
                 message = self.connection.recv(4096)
-                #self.cnt.send(message)
                 if message:
                     self.client.receive_message(message)
                 else:

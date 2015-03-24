@@ -6,41 +6,42 @@ import time
 import json
 
 class userHandler():
-
-    def __init__(self):
-        self.connections = []
-        self.users =[]
-        self.history = []
+    users = []
+    connections = []
+    history = []
+    global users
+    global connections
+    global history
 
 
     def addUser(self, user):
-        self.users.append(user)
+        users.append(user)
 
     def hasUser(self, user):
-        for i in self.users:
+        for i in users:
             if i == user:
                 return True
         return False
 
     def removeUser(self, user):
-        self.users.remove(user)
+        users.remove(user)
 
     def getUsers(self):
-        return self.users
+        return users
 
     def addConnection(self, handler):
-        self.connections.append(handler)
+        connections.append(handler)
 
     def getConnections(self):
-        return self.connections
+        return connections
 
     def removeConnection(self, conn):
-        self.connections.remove(conn)
+        connections.remove(conn)
     def addMessage(self, message):
-        self.history.append(message)
+        history.append(message)
 
     def getHistory(self):
-        return self.history
+        return history
 
 
 class ClientHandler(SocketServer.BaseRequestHandler):
@@ -139,22 +140,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                 response = {"Timestamp": thisTime, "Sender": user, "Response": "Message", "Content": body}
                 jsonresponse = json.dumps(response)
+                print threads
                 for i in threads:
-                    if i == self:
-                        continue
-                    else:
                         i.connection.send(jsonresponse)
-                    #obj = i.connection.recv(4096)
-
-            #elif request == 'msg' and not hasLoggedIn:
-                #print
-                #tid = time.time()
-                #thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                #response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Error", "Content": "You have to be logged in in order to send messages,"}
-                #jsonresponse = json.dumps(response)
-                #self.connection.send(jsonresponse)
-
-            # TODO: Add handling of received payload from client
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -176,7 +164,7 @@ if __name__ == "__main__":
     No alterations is necessary
     """
 
-    HOST, PORT = '78.91.70.232', 20000
+    HOST, PORT = 'localhost', 20000
     print 'Server running...'
 
     # Set up and initiate the TCP server

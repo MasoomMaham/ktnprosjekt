@@ -135,4 +135,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('78.91.70.232', 20000)
+    client = Client('localhost', 20000)
