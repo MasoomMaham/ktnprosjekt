@@ -108,7 +108,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     handler.removeConnection(self)
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                    obj = {"Timestamp": thisTime, "Sender": "Server", "Response": "Logout", "Content": "Logout successfull"}
+                    obj = {"Timestamp": thisTime, "Sender": "Server", "Response": "Logout", "Content": "Logout successful"}
+                    jsonresponse = json.dumps(obj)
+                    self.connection.send(jsonresponse)
                     self.connection.close()
 
                 elif request == 'names':

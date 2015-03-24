@@ -122,6 +122,8 @@ class Client:
             elif response == "Names" and (len(body) > 1):
                 for i in body:
                     print '[ User: '+i
+            elif response == "Logout":
+                self.disconnect()
             #elif response == "History" and len(body) == 0:
                 #print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: No history.'
             #else:
@@ -131,7 +133,7 @@ class Client:
             pass
         except ValueError:
             print("Not JSON.")
-            print(message)
+            print(message+" TULL")
 
 
     def send_payload(self, data):
