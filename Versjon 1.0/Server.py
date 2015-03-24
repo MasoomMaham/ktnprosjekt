@@ -94,7 +94,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         self.connection.send(jsonresponse)
                         history = handler.getHistory()
                         response = {"Timestamp": thisTime, "Sender": "Server", "Response": "History", "Content": history}
-                        jsonresponse = response
+                        jsonresponse = json.dumps(response)
                         self.connection.send(jsonresponse)
                         print(body+" logged in.")
                         handler.addUser(str(body))
