@@ -117,6 +117,8 @@ class Client:
                 printString = ""
                 for i in body:
                     print '[History: '+ i[1]+' [Sender: '+i[0]
+            elif response == "History" and (len(body) == 0):
+                print "No history."
             elif response == "Names" and (len(body) > 1):
                 for i in body:
                     print '[ User: '+i
