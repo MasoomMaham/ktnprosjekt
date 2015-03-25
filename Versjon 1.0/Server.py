@@ -73,12 +73,13 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
                 if request == 'login' and not hasLoggedIn:
                     if handler.hasUser(body):
+                        print("USER EXISTS!!!")
                         tid = time.time()
                         thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                        response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "The username is already in use, please choose another one."}
+                        response = {"Timestamp": thisTime, "Sender": "Server", "Response": "LoginFailedUserName", "Content": "Username occupied, please try with another one."}
                         print type(response)
                         jsonresponse = json.dumps(response)
-                        self.connection.send(json.dumps(jsonresponse))
+                        self.connection.send(jsonresponse)
 
                     else:
                         handler.addConnection(self)
@@ -130,7 +131,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     jsonresponse = json.dumps(response)
                     self.connection.send(jsonresponse)
 
-                elif request == 'msg':
+                elif request == 'msg' and hasLoggedIn:
                     print("Got message: "+body)
                     #tid = time.time()
                     #thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')

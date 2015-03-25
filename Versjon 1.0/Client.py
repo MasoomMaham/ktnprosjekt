@@ -53,8 +53,7 @@ class Client:
                     print("Norwegian characters are not allowed.")
                     continue
                 self.send_payload(jsonobj)
-                self.requestHistory()
-                loggedOn = True
+
                 self.hasloggedOn = True
 
             elif income == '-logout' and self.hasloggedOn:
@@ -70,10 +69,10 @@ class Client:
                     print("Norwegian characters are not allowed.")
                     continue
 
-            elif income == "-logout" and not loggedOn:
+            elif income == "-logout" and not self.hasloggedOn:
                 print("You have to be logged in order to log out.")
 
-            elif income == "-names":
+            elif income == "-names" and self.hasloggedOn:
                 obj = {"request": "names", "content": ""}
                 try:
                     jsonobj = json.dumps(obj)
@@ -92,9 +91,9 @@ class Client:
                 print("Connection: "+str(self.connection))
 
             else:
-                if not loggedOn:
-                    print("You have to be logged on in order to chat.")
-                elif not self.hasloggedOn:
+                #if not loggedOn:
+                    #print("You have to be logged on in order to chat.")
+                if not self.hasloggedOn:
                     print("You have to be logged on in order to chat.")
                 elif loggedOn or self.hasloggedOn:
                     obj = {"request": "msg", "content": income}
@@ -126,9 +125,12 @@ class Client:
             response = obj["Response"]
             body = obj["Content"]
 
-            if response == "History" and (len(body) > 1):
+            if response == "History" and (len(body) >= 1):
                 for i in body:
                     print '[History: '+i[1]+' [Sender: '+i[0]
+            elif response == "LoginFailedUserName":
+                print'[Time: ' + time + ']' + '[Sender: '+sender + '[Message: '+body+' ]'
+                self.hasloggedOn = False
             elif response == "History" and body == []:
                 print "No history."
             elif response == "Names" and (len(body) >= 1):
