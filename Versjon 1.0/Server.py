@@ -24,7 +24,11 @@ class userHandler():
         return False
 
     def removeUser(self, user):
-        users.remove(user)
+        for i in range(len(users)):
+            print(str(user)+" er lik "+str(users[i]))
+            if users[i] == user:
+                print(str(user)+" er lik "+str(users[i]))
+                users.pop(i)
 
     def getUsers(self):
         return users
@@ -103,7 +107,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     print("Logged in users: "+str(handler.getUsers()))
                     print(user+" trying to log out")
                     #print handler.getConnections()
-                    #handler.removeUser(str(body))
+                    handler.removeUser(str(user))
                     print("User: "+user+" should have been removed from: "+str(handler.getUsers()))
                     #print(body+" logged out.")
                     tid = time.time()
