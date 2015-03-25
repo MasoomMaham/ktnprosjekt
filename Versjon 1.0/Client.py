@@ -13,6 +13,7 @@ class Client:
         self.hasloggedOn = False
         self.host = host
         self.server_port = server_port
+        self.EarlierLogin = False
         """
         This method is run when creating a new Client object
         """
@@ -33,7 +34,6 @@ class Client:
         while True:
 
             income = raw_input()
-            #income = unicode(rawincome, "utf-8")
             if income == '-help':
                 helpCmd = ['The following commands are useful:'
                 '\n -login: type "login" followed by a return, then a line consisting only of the desired username.'
@@ -45,7 +45,7 @@ class Client:
                 print("Type in your desired username and you will be logged into the server as long as the username is not occupied.")
 
                 income = raw_input()
-                #income = unicode(rawincome, "utf-8")
+
                 obj = {"request": "login", "content": income}
                 try:
                     jsonobj = json.dumps(obj)
@@ -53,20 +53,26 @@ class Client:
                     print("Norwegian characters are not allowed.")
                     continue
                 self.send_payload(jsonobj)
+                self.requestHistory()
                 loggedOn = True
                 self.hasloggedOn = True
-            elif income == '-logout' and loggedOn:
+
+            elif income == '-logout' and self.hasloggedOn:
+                print("Trying to log out.")
                 obj = {"request": "logout", "content": ""}
                 try:
                     jsonobj = json.dumps(obj)
+                    self.send_payload(jsonobj)
+                    #print("Sent logout req.")
+                    #self.disconnect()
+                    self.hasloggedOn = False
                 except UnicodeDecodeError:
                     print("Norwegian characters are not allowed.")
                     continue
-                self.send_payload(jsonobj)
-                self.disconnect()
-                self.hasloggedOn = False
+
             elif income == "-logout" and not loggedOn:
                 print("You have to be logged in order to log out.")
+
             elif income == "-names":
                 obj = {"request": "names", "content": ""}
                 try:
@@ -75,8 +81,9 @@ class Client:
                     print("Norwegian characters are not allowed.")
                     continue
                 self.send_payload(jsonobj)
-
-            elif income == "-history":
+            elif income == "-names" and not self.hasloggedOn:
+                print("You have to be logged on in order to know who is online.")
+            elif income == "-history" and self.hasloggedOn:
                 self.requestHistory()
             elif income == '-Quit':
                 print "Bye"
@@ -87,7 +94,9 @@ class Client:
             else:
                 if not loggedOn:
                     print("You have to be logged on in order to chat.")
-                elif loggedOn:
+                elif not self.hasloggedOn:
+                    print("You have to be logged on in order to chat.")
+                elif loggedOn or self.hasloggedOn:
                     obj = {"request": "msg", "content": income}
                     try:
                         jsonobj = json.dumps(obj)
@@ -97,7 +106,11 @@ class Client:
                     self.send_payload(jsonobj)
 
     def disconnect(self):
+        print("Disconnecting...")
         self.connection.close()
+        self.hasloggedOn = False
+        self.EarlierLogin = True
+        print("Loginstatus: "+str(self.hasloggedOn))
         pass
 
     def receive_message(self, message):
@@ -114,16 +127,16 @@ class Client:
             body = obj["Content"]
 
             if response == "History" and (len(body) > 1):
-                printString = ""
                 for i in body:
-                    print '[History: '+ i[1]+' [Sender: '+i[0]
-            elif response == "History" and (len(body) == 0):
+                    print '[History: '+i[1]+' [Sender: '+i[0]
+            elif response == "History" and body == []:
                 print "No history."
-            elif response == "Names" and (len(body) > 1):
+            elif response == "Names" and (len(body) >= 1):
                 for i in body:
                     print '[ User: '+i
             elif response == "Logout":
                 self.disconnect()
+                print'[Time: ' + time + ']' + '[Sender: '+sender + '[Message: '+body+' ]'
             #elif response == "History" and len(body) == 0:
                 #print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: No history.'
             #else:
@@ -152,4 +165,4 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
-    client = Client('78.91.70.232', 20000)
+    client = Client('78.91.70.217', 20000)

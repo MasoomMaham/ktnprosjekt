@@ -13,8 +13,6 @@ class userHandler():
     global users
     global history
 
-
-
     def addUser(self, user):
         users.append(user)
 
@@ -56,10 +54,8 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         handler = userHandler()
+        hasLoggedIn = False
         user = ''
-        """
-        This method handles the connection between a client and the server.
-        """
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
@@ -68,7 +64,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         # Loop that listens for messages from the client
         while True:
 
-            hasLoggedIn = False
             received_string = self.connection.recv(4096)
             try:
                 jrec = json.loads(received_string)
@@ -92,28 +87,33 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Login", "Content": "Login Successful."}
                         jsonresponse = json.dumps(response)
                         self.connection.send(jsonresponse)
-                        history = handler.getHistory()
-                        response = {"Timestamp": thisTime, "Sender": "Server", "Response": "History", "Content": history}
-                        jsonresponse = json.dumps(response)
-                        self.connection.send(jsonresponse)
+                        #history = handler.getHistory()
+                        #response = {"Timestamp": thisTime, "Sender": "Server", "Response": "History", "Content": history }
+                        #jsonresponse = json.dumps(response)
+                        #recv1 = self.connection.recv(4096)
+                        #self.connection.send(jsonresponse)
                         print(body+" logged in.")
                         handler.addUser(str(body))
-                        print("CURRENT USERS: "+str(handler.getUsers()))
+                        hasLoggedIn = True
+                        #print("CURRENT USERS: "+str(handler.getUsers()))
 
                 elif request == 'logout':
-                    print handler.getUsers()
-                    print handler.getConnections()
-                    handler.removeUser(str(body))
-                    print(body+" logged out.")
-                    handler.removeConnection(self)
+                    print("Logged in users: "+str(handler.getUsers()))
+                    print(user+" trying to log out")
+                    #print handler.getConnections()
+                    #handler.removeUser(str(body))
+                    print("User: "+user+" should have been removed from: "+str(handler.getUsers()))
+                    #print(body+" logged out.")
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     obj = {"Timestamp": thisTime, "Sender": "Server", "Response": "Logout", "Content": "Logout successful"}
                     jsonresponse = json.dumps(obj)
                     self.connection.send(jsonresponse)
+                    handler.removeConnection(self)
                     self.connection.close()
 
                 elif request == 'names':
+                    print("Requested names.")
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Names", "Content": handler.getUsers()}
@@ -121,6 +121,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     self.connection.send(jsonresponse)
 
                 elif request == 'history':
+                    print("Requested history.")
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
                     history = handler.getHistory()
@@ -130,13 +131,12 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
                 elif request == 'msg':
                     print("Got message: "+body)
-                    tid = time.time()
-                    thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                    obj = {"Timestamp": thisTime, "Sender": str(user), "Response": "History", "Content": str(body)}
-                    jsonresponse = json.dumps(obj)
+                    #tid = time.time()
+                    #thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
+                    #obj = {"Timestamp": thisTime, "Sender": str(user), "Response": "History", "Content": str(body)}
+                    #jsonresponse = json.dumps(obj)
                     hist = (user, body)
                     handler.addMessage(hist)
-                    print("Added "+body+" to history")
                     threads = handler.getConnections()
                     tid = time.time()
                     thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
@@ -144,22 +144,12 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     jsonresponse = json.dumps(response)
                     for i in threads:
                         i.connection.send(jsonresponse)
-                        #obj = i.connection.recv(4096)
-
-                #elif request == 'msg' and not hasLoggedIn:
-                    #print
-                    #tid = time.time()
-                    #thisTime = datetime.datetime.fromtimestamp(tid).strftime('%H:%M:%S')
-                    #response = {"Timestamp": thisTime, "Sender": "Server", "Response": "Error", "Content": "You have to be logged in in order to send messages,"}
-                    #jsonresponse = json.dumps(response)
-                    #self.connection.send(jsonresponse)
 
             except ValueError:
                 print("Not JSON-Object, trying again.")
                 counter += 1
                 if counter == 3:
                     self.connection.close()
-            # TODO: Add handling of received payload from client
 
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -169,7 +159,6 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
     No alterations is necessary
     """
-
 
     allow_reuse_address = True
 
@@ -181,7 +170,7 @@ if __name__ == "__main__":
     No alterations is necessary
     """
 
-    HOST, PORT = '78.91.70.232', 20000
+    HOST, PORT = '78.91.70.217', 20000
     print 'Server running...'
 
     # Set up and initiate the TCP server
