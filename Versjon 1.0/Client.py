@@ -142,7 +142,7 @@ class Client:
             #else:
                 #print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + body
             else:
-                print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + ' Message: ' + body
+                print '[Time: ' + time + ']' + '[Sender: ' + sender + ']' + '[Message: ' + body
             pass
         except ValueError:
             print("Not JSON.")

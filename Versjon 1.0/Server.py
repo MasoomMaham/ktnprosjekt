@@ -9,6 +9,7 @@ class userHandler():
     connections = []
     users = []
     history = []
+    history.append(("SERVER", "ServerStart"))
     global connections
     global users
     global history
